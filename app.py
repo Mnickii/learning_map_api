@@ -1,6 +1,13 @@
-from flask import Flask
+import os
 
-app = Flask(__name__)
+from flask import current_app
+
+from api import create_app
+
+
+configuration = os.getenv("FLASK_CONFIG")
+
+app = create_app(configuration)
 
 @app.route('/')
 def index():
