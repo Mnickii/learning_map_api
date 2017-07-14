@@ -6,5 +6,5 @@ __pycache_/
 .idea/
 instance/
 migrations/
-
+.vscode/
 test_db.sqlite

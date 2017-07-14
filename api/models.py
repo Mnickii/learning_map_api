@@ -6,26 +6,38 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-class User(db.Model):
+class SerializerMixin(object):
+    """
+    Contains the serialize method to convert objects to a dictionary
+    """
 
-    __tablename__ = 'Users'
-
-    user_id = db.Column(db.Integer, primary_key=True)
-    user_pic_url = db.Column(db.String, nullable=False)
-    name = db.Column(db.String, nullable=False)
-    ideas = db.relationship('Idea', backref='contributed_by',
-                            lazy='dynamic', cascade='all, delete-orphan')
-    resources = db.relationship(
-        'Resource', backref='contributed_by', lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    skills = db.relationship(
-        'Skill', backref='contributed_by', lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
+    def serialize(self):
+        return {column.name: getattr(self, column.name)
+                for column in self.__table__.columns
+                if column.name not in ['idea_id', 'resource_id']}
 
 
-class Idea(db.Model):
+# Shows the many to many relationship between Ideas and Tags
+idea_tag = db.Table('idea_tag',
+                    db.Column('idea_id', db.Integer, db.ForeignKey(
+                        'Ideas.id'), nullable=False),
+                    db.Column('tags_id', db.Integer, db.ForeignKey(
+                        'Tags.id'), nullable=False),
+                    db.PrimaryKeyConstraint('idea_id', 'tags_id'))
+
+# Shows the many to many relationship between Resource and Tags
+resource_tag = db.Table('resource_tag',
+                        db.Column('resource_id', db.Integer, db.ForeignKey(
+                            'Resources.resource_id'), nullable=False),
+                        db.Column('tags_id', db.Integer, db.ForeignKey(
+                            'Tags.id'), nullable=False),
+                        db.PrimaryKeyConstraint('resource_id', 'tags_id'))
+
+
+class Idea(db.Model, SerializerMixin):
+    """
+    The Idea Model
+    """
 
     __tablename__ = "Ideas"
 
@@ -36,70 +48,80 @@ class Idea(db.Model):
     tags = db.relationship("Tag", backref="idea_tag",
                            lazy="dynamic", cascade='all, delete-orphan')
     status = db.Column(db.String(20), default="pending")
-    contributor_id = db.Column(
-        db.Integer, db.ForeignKey('Users.user_id'), nullable=False)
+    owner_id = db.Column(db.String, nullable=False)
+    description = db.Column(db.String(140))
+    tags = db.relationship("Tag", secondary="idea_tag",
+                           backref="ideas", lazy="dynamic")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default="pending")
 
     def __repr__(self):
         return '<Idea %r>' % self.title
 
 
-class Resource(db.Model):
+class Tag(db.Model, SerializerMixin):
+    """
+    The Tag Model
+    """
+
+    __tablename__ = "Tags"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tag = db.Column(db.String(80), unique=True)
+
+    def __repr__(self):
+        return '<Tag %r>' % self.tag
+
+
+class Resource(db.Model, SerializerMixin):
+    """
+    The Resources Model
+    """
 
     __tablename__ = "Resources"
 
-    id = db.Column(db.Integer, primary_key=True)
+    resource_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
-    owner_id = db.Column(db.Integer)
+    owner_id = db.Column(db.String, nullable=False)
     description = db.Column(db.String(140))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    tags = db.relationship("Tag", backref="resource_tag",
-                           lazy="dynamic", cascade='all, delete-orphan')
-    links = db.relationship("Link", backref="resource_link",
-                            lazy="dynamic", cascade='all, delete-orphan')
-    contributor_id = db.Column(
-        db.Integer, db.ForeignKey('Users.user_id'), nullable=False)
+    tags = db.relationship("Tag", secondary="resource_tag",
+                           backref="resources", lazy="dynamic")
+    links = db.relationship("Link", backref="resource_link", lazy="dynamic")
 
     def __repr__(self):
         return '<Resource %r>' % self.title
 
 
-class Skill(db.Model):
+class Skill(db.Model, SerializerMixin):
+    """
+    The Skill Model
+    """
 
     __tablename__ = "Skills"
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
     description = db.Column(db.String(140))
-    created_at = db.Column(db.DateTime, default=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default="pending")
-    contributor_id = db.Column(
-        db.Integer, db.ForeignKey('Users.user_id'), nullable=False)
+    owner_id = db.Column(db.String, nullable=False)
 
     def __repr__(self):
         return '<Skill %r>' % self.title
 
 
-class Tag(db.Model):
-
-    __tablename__ = "Tags"
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80))
-    idea_id = db.Column(db.Integer, db.ForeignKey("Ideas.id"))
-    resource_id = db.Column(db.Integer, db.ForeignKey("Resources.id"))
-
-    def __repr__(self):
-        return '<Tag %r>' % self.title
-
-
-class Link(db.Model):
+class Link(db.Model, SerializerMixin):
+    """
+    The Link Model
+    """
 
     __tablename__ = "Links"
 
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(80), nullable=False)
-    resource_id = db.Column(db.Integer, db.ForeignKey("Resources.id"))
+    resource_id = db.Column(db.Integer, db.ForeignKey("Resources.resource_id"))
 
     def __repr__(self):
         return '<Link %r>' % self.url
