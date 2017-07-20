@@ -8,10 +8,16 @@ from flask_restful import Api
 try:
     from api.config import app_configuration
     from api.views.contributions import UserContributionsResource
+    from api.views.path_endpoints import (
+        PathResource
+    )
 except ModuleNotFoundError:
     from learning_map_api.api.config import app_configuration
     from learning_map_api.api.views.contributions import (
         UserContributionsResource
+    )
+    from learning_map_api.api.views.path_endpoints import (
+        PathResource
     )
 
 
@@ -38,6 +44,10 @@ def create_flask_app(environment):
     api.add_resource(UserContributionsResource,
                      '/api/v1/contributions/<string:user_id>',
                      endpoint='fetch_user_contributions')
+    api.add_resource(PathResource, '/api/v1/paths', '/api/v1/paths/',
+                     endpoint='paths')
+    api.add_resource(PathResource, '/api/v1/paths/<string:id>',
+                     '/api/v1/paths/<string:id>/', endpoint='single_path')
 
     # handle default 404 exceptions with a custom response
     @app.errorhandler(404)
