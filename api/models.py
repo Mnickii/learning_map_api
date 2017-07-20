@@ -40,7 +40,6 @@ class Idea(db.Model, SerializerMixin):
     """
 
     __tablename__ = "Ideas"
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
     description = db.Column(db.String(140))
@@ -118,10 +117,21 @@ class Link(db.Model, SerializerMixin):
     """
 
     __tablename__ = "Links"
-
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(80), nullable=False)
     resource_id = db.Column(db.Integer, db.ForeignKey("Resources.resource_id"))
 
     def __repr__(self):
         return '<Link %r>' % self.url
+
+
+class Path(db.Model, SerializerMixin):
+    """
+    To define fields for a learning path/role
+    """
+    id = db.Column(db.String(), primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+
+    def __repr__(self):
+        return '<Path %r>' % self.name
