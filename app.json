@@ -1,0 +1,26 @@
+{
+  "name": "learning_map_api",
+  "scripts": {
+  },
+  "env": {
+    "FLASK_APP": {
+      "required": true
+    },
+    "FLASK_CONFIG": {
+      "required": true
+    },
+    "SQLALCHEMY_DATABASE_URI": {
+      "required": true
+    }
+  },
+  "formation": {
+  },
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
