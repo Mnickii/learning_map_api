@@ -1,8 +1,7 @@
 from flask_testing import TestCase
 
 from learning_map_api.main import create_flask_app
-from learning_map_api.api.models import db, Idea, Resource, Skill, Tag, Link, Path
-from learning_map_api.api.views.path_endpoints import PathResource
+from learning_map_api.api.models import db
 
 
 class BaseTestCase(TestCase):

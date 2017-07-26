@@ -1,10 +1,10 @@
 import json
 
-from learning_map_api.api.test.base import BaseTestCase
+from learning_map_api.test.base import BaseTestCase
 from learning_map_api.api.models import db, Path
 
 
-class PathTestCase(BaseTestCase):
+class PathsTestCase(BaseTestCase):
 
     def setUp(self):
         db.drop_all()

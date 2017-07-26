@@ -1,4 +1,4 @@
-from learning_map_api.api.test.base import BaseTestCase
+from learning_map_api.test.base import BaseTestCase
 
 
 class TestMain(BaseTestCase):

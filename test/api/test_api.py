@@ -1,5 +1,5 @@
 from learning_map_api.main import create_flask_app
-from learning_map_api.api.test.base import BaseTestCase
+from learning_map_api.test.base import BaseTestCase
 
 
 class TestApiInitialization(BaseTestCase):

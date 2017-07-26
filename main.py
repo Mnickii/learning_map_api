@@ -6,17 +6,17 @@ from flask import jsonify
 from flask_restful import Api
 
 try:
-    from api.config import app_configuration
-    from api.views.contributions import UserContributionsResource
-    from api.views.path_endpoints import (
+    from config import app_configuration
+    from api.views.contributions import ContributionsResource
+    from api.views.paths import (
         PathResource
     )
 except ModuleNotFoundError:
-    from learning_map_api.api.config import app_configuration
+    from learning_map_api.config import app_configuration
     from learning_map_api.api.views.contributions import (
-        UserContributionsResource
+        ContributionsResource
     )
-    from learning_map_api.api.views.path_endpoints import (
+    from learning_map_api.api.views.paths import (
         PathResource
     )
 
@@ -41,9 +41,9 @@ def create_flask_app(environment):
 
     # create endpoints
     api = Api(app)
-    api.add_resource(UserContributionsResource,
-                     '/api/v1/contributions/<string:user_id>',
-                     endpoint='fetch_user_contributions')
+    api.add_resource(ContributionsResource,
+                     '/api/v1/contributions',
+                     endpoint='contributions')
     api.add_resource(PathResource, '/api/v1/paths', '/api/v1/paths/',
                      endpoint='paths')
     api.add_resource(PathResource, '/api/v1/paths/<string:id>',

@@ -7,4 +7,4 @@ __pycache_/
 instance/
 migrations/
 .vscode/
-test_db.sqlite
+*.sqlite
