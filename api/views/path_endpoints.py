@@ -8,12 +8,25 @@ class PathResource(Resource):
     """
     Contains endpoints for path CRUD operations.
     """
+
+    def __init__(self):
+        self.path_params = ["id", "name", "description"]
+        
     def post(self):
         """
         To create a learning path
         """
         if request.get_json():
             result = request.get_json()
+            for param in result.keys():
+                if param not in self.path_params:
+                    return {"error": "<{}> is not a required parameter.".format(
+                        param
+                    )}, 400
+            if not result["name"]:
+                return {"error": "Name is required."}, 400
+            if not result["description"]:
+                return {"error": "Description is required."}, 400
             if Path.query.filter_by(name=result["name"]).first():
                 # prevent instances of duplicate path names
                 return {"error": "A Path with same name exists."}, 409
@@ -60,12 +73,21 @@ class PathResource(Resource):
                     "warning": "There are no paths yet."
                 })
 
-    def put(self, id):
+    def put(self, id=None):
         """
         To update a path.
         """
         if request.get_json():
             result = request.get_json()
+            if not id:
+                # if id is not passed
+                return {"error": "Path id must be provided"}, 400
+
+            for param in result.keys():
+                if param not in self.path_params:
+                    return {"error": "<{}> is not a required parameter.".format(
+                        param
+                    )}, 400
             # if an id is passed, query for path with that id
             path = Path.query.filter_by(id=id).first()
             if not result["name"].strip():
@@ -93,10 +115,13 @@ class PathResource(Resource):
                 response.status_code = 404
                 return response
 
-    def delete(self, id):
+    def delete(self, id=None):
         """
         To delete path
         """
+        if not id:
+            # if id is not passed
+            return {"error": "Path id must be provided"}, 400
         path = Path.query.get(id)
         if path:
             db.session.delete(path)

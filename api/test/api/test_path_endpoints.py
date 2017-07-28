@@ -180,3 +180,34 @@ class PathTestCase(BaseTestCase):
             "Path does not exist."
         )
         self.assert404(response)
+
+    def test_reject_update_with_no_id(self):
+        """
+        To reject PUT operation given no ID
+        """
+        response = self.client.put(
+            '/api/v1/paths/',
+            data=json.dumps({'name': 'Robotics'}),
+            content_type='application/json'
+        )
+        self.assertEqual(
+            json.loads(response.data)["error"],
+            "Path id must be provided"
+        )
+
+    def test_reject_delete_with_no_id(self):
+        """
+        To reject PUT operation given no ID
+        """
+        old_all_paths = Path.query.all()
+        response = self.client.delete(
+            '/api/v1/paths/',
+            content_type='application/json'
+        )
+        self.assertEqual(
+            json.loads(response.data)["error"],
+            "Path id must be provided"
+        )
+        # get all paths after delete attempt
+        all_paths = Path.query.all()
+        self.assertEqual(len(old_all_paths), len(all_paths))
