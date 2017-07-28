@@ -41,21 +41,66 @@ class PathsTestCase(BaseTestCase):
         self.assertEqual(len(new_all_paths), len(old_all_paths) + 1)
         self.assertEqual(response.status_code, 201)
 
+    def test_path_name_is_required_on_create(self):
+        """
+        To test that path name is a required field.
+        """
+        old_all_paths = Path.query.all()
+        response = self.client.post(
+            '/api/v1/paths',
+            data=json.dumps({
+                "name": "",
+                "description": "path description"
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(
+            json.loads(response.data)["error"],
+            "Name and description are required to create a path."
+        )
+        new_all_paths = Path.query.all()
+        # confirm that the invald path is not created
+        self.assertEqual(len(new_all_paths), len(old_all_paths))
+        self.assertEqual(response.status_code, 400)
+
+    def test_description_is_required_on_create(self):
+        """
+        To test that path description is a required field.
+        """
+        old_all_paths = Path.query.all()
+        response = self.client.post(
+            '/api/v1/paths',
+            data=json.dumps({
+                "name": "Path name",
+                "description": ""
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(
+            json.loads(response.data)["error"],
+            "Name and description are required to create a path."
+        )
+        new_all_paths = Path.query.all()
+        # confirm that the invald path is not created
+        self.assertEqual(len(new_all_paths), len(old_all_paths))
+        self.assertEqual(response.status_code, 400)
+
     def test_no_duplicate_path_names(self):
         """
         To test path with same name cannot be recreated.
         """
+        name="Blockchain Developer"
         response = self.client.post(
             '/api/v1/paths',
             data=json.dumps(dict(
-                name="Blockchain Developer",
-                description="Leading software platform for digital assets."
+                name=name,
+                description="To become a leading blockchain developer"
             )),
             content_type='application/json'
         )
         self.assertEqual(
             json.loads(response.data)["error"],
-            "A Path with same name exists."
+            "A Path with the name {} exists.".format(name)
         )
         self.assertEqual(response.status_code, 409)
 
@@ -95,14 +140,15 @@ class PathsTestCase(BaseTestCase):
         """
         # delete all existing paths
         db.session.query(Path).delete()
-        path = Path.query.all()
+        paths = Path.query.all()
         response = self.client.get(
             '/api/v1/paths/',
             content_type='application/json'
         )
+        # confirm that path count is zero
         self.assertEqual(
-            json.loads(response.data)["warning"],
-            "There are no paths yet."
+            json.loads(response.data)["count"],
+            0
         )
         self.assert200(response)
 
@@ -119,6 +165,22 @@ class PathsTestCase(BaseTestCase):
             json.loads(response.data)["error"], "Path does not exist."
         )
         self.assert404(response)
+
+    def test_path_id_required_on_update(self):
+        """
+        Test that fetch fails when given invalid id.
+        """
+        path = Path.query.all()[0]
+        response = self.client.put(
+            '/api/v1/paths/',
+            data=json.dumps(self.path2),
+            content_type='application/json'
+        )
+        print(response.__dict__)
+        self.assertEqual(
+            json.loads(response.data)["error"], "Path id must be provided."
+        )
+        self.assert400(response)
 
     def test_update_path(self):
         """
@@ -166,11 +228,25 @@ class PathsTestCase(BaseTestCase):
             "Path deleted successfully."
         )
 
+    def test_path_id_required_on_delete(self):
+        """
+        To test delete operation doesnt work without path id.
+        """
+        path = Path.query.all()[0]
+        response = self.client.delete(
+            '/api/v1/paths/',
+            content_type='application/json'
+        )
+        self.assertEqual(
+            json.loads(response.data)["error"],
+            "Path id must be provided."
+        )
+
     def test_delete_path_with_invalid_id(self):
         """
         To test delete fails given invalid id.
         """
-        path = Path.query.all()[0]
+        old_all_paths = Path.query.all()
         response = self.client.delete(
             '/api/v1/paths/-invalid-id-1234',
             content_type='application/json'
@@ -180,3 +256,5 @@ class PathsTestCase(BaseTestCase):
             "Path does not exist."
         )
         self.assert404(response)
+        new_all_paths = Path.query.all()
+        self.assertEqual(len(old_all_paths), len(new_all_paths))

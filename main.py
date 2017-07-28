@@ -46,8 +46,8 @@ def create_flask_app(environment):
                      endpoint='contributions')
     api.add_resource(PathResource, '/api/v1/paths', '/api/v1/paths/',
                      endpoint='paths')
-    api.add_resource(PathResource, '/api/v1/paths/<string:id>',
-                     '/api/v1/paths/<string:id>/', endpoint='single_path')
+    api.add_resource(PathResource, '/api/v1/paths/<string:path_id>',
+                     '/api/v1/paths/<string:path_id>/', endpoint='single_path')
 
     # handle default 404 exceptions with a custom response
     @app.errorhandler(404)
