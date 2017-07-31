@@ -1,16 +1,15 @@
 import os
-from os.path import join, dirname
 
+from os.path import join, dirname
 from dotenv import load_dotenv
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-
 class Config(object):
-    BASE_DIR = dirname(__file__)
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
