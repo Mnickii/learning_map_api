@@ -44,10 +44,13 @@ def create_flask_app(environment):
     api.add_resource(ContributionsResource,
                      '/api/v1/contributions',
                      endpoint='contributions')
+    api.add_resource(ContributionsResource,
+                     '/api/v1/contributions/<string:id>')
     api.add_resource(PathResource, '/api/v1/paths', '/api/v1/paths/',
                      endpoint='paths')
     api.add_resource(PathResource, '/api/v1/paths/<string:id>',
                      '/api/v1/paths/<string:id>/', endpoint='single_path')
+
 
     # handle default 404 exceptions with a custom response
     @app.errorhandler(404)
