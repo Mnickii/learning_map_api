@@ -6,26 +6,32 @@ from ..models import Contribution
 
 class ContributionsResource(Resource):
 
-    def get(self, user_id):
+    def get(self):
+        # fetch all contributions
+        get_contributions = Contribution.query.order_by(
+            Contribution.created_at.desc())
 
-        _user_contributions = Contribution.query.filter_by(user_id=user_id).all()
-        if not user_contributions:
+        if not get_contributions:
             return jsonify(dict(status=200,
-                                    message='You do not have any '
-                                    'contributions yet'))
+                                message='You do not have any contributions yet'))
 
-        user_contributions = [c.serialize for c in _user_contributions]
-        # for resource in user_resources:
-        #     # serialize resource
-        #     user_resource_serialized = resource.serialize()
-        #
-        #     # add extra keys to serialized resource
-        #     user_resource_serialized['category'] = 'resource'
-        #     user_resource_serialized['tags'] = [
-        #         tag.serialize() for tag in resource.tags]
-        #     user_resource_serialized['links'] = [
-        #         link.serialize() for link in resource.links]
-        #
-        #     # append resource to contributions list
-        #     contributions.append(user_resource_serialized)
+        # initialize empty list to append contributions
+        contributions = []
+
+        for contribution in get_contributions:
+
+            # serialize all contributions
+            all_contributions = contribution.serialize()
+
+            # add contribution_type field
+            all_contributions['contribution_type'] = contribution.contribution_type.name
+
+            # add tags to resource and idea contributions
+            if contribution.contribution_type.name.upper() in ['IDEA', 'RESOURCE']:
+                all_contributions['tags'] = [tag.serialize()
+                                             for tag in contribution.tags]
+
+            # append serialized contributions to contributions list
+            contributions.append(all_contributions)
+
         return jsonify(dict(status=200, contributions=contributions))
