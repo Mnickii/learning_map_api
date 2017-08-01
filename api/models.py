@@ -14,15 +14,15 @@ class SerializerMixin(object):
     def serialize(self):
         return {column.name: getattr(self, column.name)
                 for column in self.__table__.columns
-                if column.name not in ['idea_id', 'resource_id']}
+                if column.name not in ['contribution_type_id']}
 
 
 #many to many relationship between contributions and tags
 contribution_tag = db.Table('contribution_tag',
-                    db.Column('contribution_id', db.String, db.ForeignKey(
-                        'Contribution.id'), nullable=False),
-                    db.Column('tag_id', db.String, db.ForeignKey(
-                        'Tag.id'), nullable=False))
+                            db.Column('contribution_id', db.String, db.ForeignKey(
+                                'Contribution.id'), nullable=False),
+                            db.Column('tag_id', db.String, db.ForeignKey(
+                                'Tag.id'), nullable=False))
 
 
 class ContributionType(db.Model, SerializerMixin):
@@ -30,6 +30,8 @@ class ContributionType(db.Model, SerializerMixin):
     __tablename__ = "ContributionType"
     id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String(80))
+    contributions = db.relationship(
+        'Contribution', backref='contribution_type', lazy='dynamic')
 
     def __repr__(self):
         return '<ContributionType %r>' % self.name
@@ -61,7 +63,7 @@ class Contribution(db.Model, SerializerMixin):
     tags = db.relationship("Tag", secondary="contribution_tag", backref="contributions",
                            lazy="dynamic")
     contribution_type_id = db.Column('contribution_type_id', db.String,
-                                  db.ForeignKey('ContributionType.id'))
+                                     db.ForeignKey('ContributionType.id'))
     status = db.Column(db.String(20), default="pending")
 
     def __repr__(self):

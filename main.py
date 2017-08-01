@@ -1,9 +1,11 @@
 import os
+from os.path import join, dirname
 
 from flask import Flask
 from flask_migrate import Migrate
 from flask import jsonify
 from flask_restful import Api
+from dotenv import load_dotenv
 
 try:
     from config import app_configuration
@@ -19,6 +21,9 @@ except ModuleNotFoundError:
     from learning_map_api.api.views.paths import (
         PathResource
     )
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 
 def create_flask_app(environment):
@@ -42,7 +47,7 @@ def create_flask_app(environment):
     # create endpoints
     api = Api(app)
     api.add_resource(ContributionsResource,
-                     '/api/v1/contributions',
+                     '/api/v1/contributions', '/api/v1/contributions/',
                      endpoint='contributions')
     api.add_resource(PathResource, '/api/v1/paths', '/api/v1/paths/',
                      endpoint='paths')
@@ -74,7 +79,7 @@ def create_flask_app(environment):
     return app
 
 
-# enable the flask run command to work
+# enables flask commands
 app = create_flask_app(os.getenv("FLASK_CONFIG"))
 
 

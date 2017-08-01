@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_restful import Resource
 
 from ..models import Contribution
@@ -6,26 +6,41 @@ from ..models import Contribution
 
 class ContributionsResource(Resource):
 
-    def get(self, user_id):
+    def get(self):
 
-        _user_contributions = Contribution.query.filter_by(user_id=user_id).all()
-        if not user_contributions:
-            return jsonify(dict(status=200,
+        if request.args.get('user'):
+            user_id = request.args.get('user', type=str)
+
+            # fetch user contributions from database
+            user_contributions = Contribution.query.filter_by(
+                user_id=user_id).all()
+            if not user_contributions:
+                return jsonify(dict(status=200,
                                     message='You do not have any '
                                     'contributions yet'))
 
-        user_contributions = [c.serialize for c in _user_contributions]
-        # for resource in user_resources:
-        #     # serialize resource
-        #     user_resource_serialized = resource.serialize()
-        #
-        #     # add extra keys to serialized resource
-        #     user_resource_serialized['category'] = 'resource'
-        #     user_resource_serialized['tags'] = [
-        #         tag.serialize() for tag in resource.tags]
-        #     user_resource_serialized['links'] = [
-        #         link.serialize() for link in resource.links]
-        #
-        #     # append resource to contributions list
-        #     contributions.append(user_resource_serialized)
-        return jsonify(dict(status=200, contributions=contributions))
+            # initialize user contributions list
+            user_contributions_serialized = []
+
+            for contribution in user_contributions:
+                # serialize contribution
+                user_contribution_serialized = contribution.serialize()
+
+                # add contribution_type key to contribution
+                user_contribution_serialized['contribution_type'] = \
+                    contribution.contribution_type.name
+
+                # add tags key to contribution if contribution is resource or
+                # idea
+                if contribution.contribution_type.name.upper() in \
+                        ['IDEA', 'RESOURCE']:
+                    user_contribution_serialized['tags'] = [
+                        tag.serialize() for tag in contribution.tags
+                    ]
+
+                # append to serialized user_contributions list
+                user_contributions_serialized.append(
+                    user_contribution_serialized)
+
+            return jsonify(dict(status=200,
+                                contributions=user_contributions_serialized))

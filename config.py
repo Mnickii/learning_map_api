@@ -24,7 +24,7 @@ class DevelopmentConfiguration(Config):
 class TestingConfiguration(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + Config.BASE_DIR \
-                              + "/test_db.sqlite"
+                              + "/test/test_db.sqlite"
 
 
 app_configuration = {
